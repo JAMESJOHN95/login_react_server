@@ -1,43 +1,67 @@
 const users = require('../Model/userModel')
 const jwt = require('jsonwebtoken')
 
-exports.Register = async(req,res)=>{
+exports.Register = async (req, res) => {
     console.log("Inside Register Request");
-    const{Username,Email,Password} = (req.body);
-    console.log(Username,Email,Password);
-    try{
-        const ExistingUser = await users.findOne({Email})
-        if(ExistingUser){
+    const { Username, Email, Password } = (req.body);
+    console.log(Username, Email, Password);
+    try {
+        const ExistingUser = await users.findOne({ Email })
+        if (ExistingUser) {
             res.status(406).json("User Already Exist")
         }
-        else{
+        else {
             const newuser = new users({
-                Username,Email,Password
+                Username, Email, Password
             })
             await newuser.save()
             res.status(200).json(newuser)
         }
     }
-    catch(err){
+    catch (err) {
         res.status(401).json(err)
     }
 }
 
-exports.login = async (req,res)=>{
+exports.login = async (req, res) => {
     console.log("Control Inside Login Request");
-    const {Email,Password} = (req.body)
-    console.log({Email,Password});
-    try{
-        const existinguser = await users.findOne({Email,Password})
-        if(existinguser){
-            const token = jwt.sign({userId:existinguser._id},process.env.jwt_secret)
-            res.status(200).json({existinguser,token})
+    const { Email, Password } = (req.body)
+    console.log({ Email, Password });
+    try {
+        const existinguser = await users.findOne({ Email, Password })
+        if (existinguser) {
+            const token = jwt.sign({ userId: existinguser._id }, process.env.jwt_secret)
+            res.status(200).json({ existinguser, token })
         }
-        else{
+        else {
             res.status(406).json("Invalid Username or Password")
         }
     }
-    catch(err){
+    catch (err) {
         res.status(401).json(err)
     }
 }
+
+exports.googlelogin = async (req, res) => {
+    console.log("Control Inside Google login");
+    const {  Username, Email, ProfileImg,Password } = (req.body)
+    console.log({  Username, Email, ProfileImg,Password });
+    try {
+        const existinguser = await users.findOne({ Email })
+        if (existinguser) {
+            const token = jwt.sign({ userId: existinguser._id }, process.env.jwt_secret)
+            res.status(200).json({ existinguser, token })
+        }
+        else {
+            const newuser = new users({
+                Username, Email, Password,ProfileImg
+            })
+            await newuser.save()
+            const token = jwt.sign({ userId: newuser._id }, process.env.jwt_secret)
+            res.status(200).json({users: newuser, token })
+        }
+    } catch (err) {
+        res.status(401).json("Invalid User")
+    }
+}
+
